@@ -60,9 +60,20 @@ export default function App() {
     };
   }, []);
 
+  async function wakeServer() {
+    try {
+      const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
+      await fetch(`${SERVER_URL}/ping`);
+    } catch (e) {}
+  }
+
   function ensureConnected(cb) {
-    if (!socket.connected) { socket.connect(); socket.once("connect", cb); }
-    else cb();
+    if (!socket.connected) {
+      wakeServer().then(() => {
+        socket.connect();
+        socket.once("connect", cb);
+      });
+    } else cb();
   }
 
   function handleCreateRoom(data) {
